@@ -5,14 +5,11 @@ documentclass = "report"
 local filename
 local includes = {{"graphicx"}}
 
---- Adds a package and optional arguments to
---  the generated document.
---  @package Name of package to include as a string
---  @arguments Arguments to package as a string
-function include(package, arguments)
-	table.insert(includes, {package,arguments})
-end
-
+--------------------------------------
+--      LOCAL MODULE FUNCTIONS      --
+--------------------------------------
+--- Parses input arguments and
+--  sets appropriate local variables.
 local function parseArguments()
 	if #arg ~= 1 then
 		io.stderr:write("Invalid arguments.\n")
@@ -22,8 +19,7 @@ local function parseArguments()
 	filename = arg[1]
 end
 
---- Reads each line of given file into
---  a table of strings
+--- Reads each line of given file into a table of strings.
 --  @filename File to read
 --	@return Table of strings
 local function readFile(filename)
@@ -35,6 +31,10 @@ local function readFile(filename)
 	return lines
 end
 
+--- Parses each line of the input file, executing
+--  inline Lua code and converting Markdown to LaTeX.
+--  @param lines Table of strings containing lines of input file
+--  @return Output as table of strings
 local function parseFile(lines)
 	local inItemize = false
 	local inEnumerate = false
@@ -102,8 +102,12 @@ local function parseFile(lines)
 		line = line:gsub("%*([^%*]+)%*", "\\textit{%1}")
 
 		-- Images
-		line = line:gsub("!%[(.*)%]%[(.*)%]%[(.*)%]%((.*)%)", [[\begin{figure} \begin{center} \includegraphics[%3]{%4} \end{center} \caption{%1} \label{%2} \end{figure}]])
-		line = line:gsub("!%[(.*)%]%[(.*)%]%((.*)%)", [[\begin{figure} \begin{center} \includegraphics{%3} \end{center} \caption{%1} \label{%2} \end{figure}]])
+		line = line:gsub("!%[(.*)%]%[(.*)%]%[(.*)%]%((.*)%)",
+			[[\begin{figure} \begin{center} \includegraphics[%3]{%4}
+			\end{center} \caption{%1} \label{%2} \end{figure}]])
+		line = line:gsub("!%[(.*)%]%[(.*)%]%((.*)%)",
+			[[\begin{figure} \begin{center} \includegraphics{%3}
+			\end{center} \caption{%1} \label{%2} \end{figure}]])
 
 		-- Footnote
 		line = line:gsub("%^%[%[(.-)%]%]", "\\footnote{%1}")
@@ -124,6 +128,10 @@ local function parseFile(lines)
 	return output
 end
 
+--- Emits the produced LaTeX code
+--  to STDOUT
+--  @param lines Table of strings containing
+--  produced LaTeX from Markdown
 local function emitLatex(lines)
 	io.write("\\documentclass[a4paper]{"..documentclass.."}\n")
 	for i,v in ipairs(includes) do
@@ -160,4 +168,18 @@ local function main()
 	emitLatex(output)
 end
 
+
+---------------------------------------------
+--          GLOBAL VARIABLES AND           --
+--      FUNCTIONS EXPOSED TO DOCUMENT      --
+---------------------------------------------
+--- Adds a package and optional arguments to
+--  the generated document.
+--  @package Name of package to include as a string
+--  @arguments Arguments to package as a string
+function include(package, arguments)
+	table.insert(includes, {package,arguments})
+end
+
+-- Call main function
 main()
