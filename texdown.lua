@@ -1,6 +1,7 @@
 title = "Untitled"
 author = "Unknown author"
 documentclass = "report"
+charset = "utf8x"
 
 local filename
 local includes = {{"graphicx"}}
@@ -62,11 +63,11 @@ local function parseFile(lines)
 		end
 
 		-- Subsubsection header
-		line = line:gsub("### (.*)", "\\subsubsection{%1}")
+		line = line:gsub("### ([^#]*)#*", "\\subsubsection{%1}")
 		-- Subsection header
-		line = line:gsub("## (.*)", "\\subsection{%1}")
+		line = line:gsub("## ([^#]*)#*", "\\subsection{%1}")
 		-- Section header
-		line = line:gsub("# (.*)", "\\section{%1}")
+		line = line:gsub("# ([^#]*)#*", "\\section{%1}")
 
 		-- Itemize item
 		if string.match(line, "^[ \t]*[%*%+%-] (.*)") then
@@ -134,6 +135,7 @@ end
 --  produced LaTeX from Markdown
 local function emitLatex(lines)
 	io.write("\\documentclass[a4paper]{"..documentclass.."}\n")
+	io.write("\\usepackage[utf8x]{inputenc}\n")
 	for i,v in ipairs(includes) do
 		if v[2] then
 			io.write("\\usepackage["..v[2].."]{"..v[1].."}\n")
@@ -167,7 +169,6 @@ local function main()
 	-- Emit
 	emitLatex(output)
 end
-
 
 ---------------------------------------------
 --          GLOBAL VARIABLES AND           --
